@@ -15,6 +15,9 @@
     <RimWorldManaged>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed</RimWorldManaged>
     <HarmonyDll>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HarmonyDll>
     <ModAssemblies>$(MSBuildThisFileDirectory)..\1.6\Assemblies\</ModAssemblies>
+    <RimWorldModRoot>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Auto Name Babies</RimWorldModRoot>
+    <RimWorldModAssemblies>$(RimWorldModRoot)\1.6\Assemblies\</RimWorldModAssemblies>
+    <RimWorldModAbout>$(RimWorldModRoot)\About\</RimWorldModAbout>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -42,5 +45,10 @@
     <MakeDir Directories="$(ModAssemblies)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModAssemblies)" />
     <Delete Files="$(ModAssemblies)$(TargetName).pdb" Condition="Exists('$(ModAssemblies)$(TargetName).pdb')" />
+    <MakeDir Directories="$(RimWorldModAssemblies)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RimWorldModAssemblies)" />
+    <Delete Files="$(RimWorldModAssemblies)$(TargetName).pdb" Condition="Exists('$(RimWorldModAssemblies)$(TargetName).pdb')" />
+    <MakeDir Directories="$(RimWorldModAbout)" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\About\Preview.png" DestinationFolder="$(RimWorldModAbout)" Condition="Exists('$(MSBuildThisFileDirectory)..\About\Preview.png')" />
   </Target>
 </Project>

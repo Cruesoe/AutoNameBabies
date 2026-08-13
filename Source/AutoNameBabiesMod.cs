@@ -10,7 +10,6 @@ public class AutoNameBabiesMod : Mod
     public AutoNameBabiesMod(ModContentPack content) : base(content)
     {
         Settings = GetSettings<AutoNameBabiesSettings>();
-        new HarmonyLib.Harmony("cruesoe.autonamebabies").PatchAll();
     }
 
     public override string SettingsCategory()

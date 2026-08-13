@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -93,18 +92,25 @@ public static class Patch_ChoiceLetter_BabyBirth_Choices
     private static readonly AccessTools.FieldRef<ChoiceLetter_BabyBirth, Pawn> PawnField =
         AccessTools.FieldRefAccess<ChoiceLetter_BabyBirth, Pawn>("pawn");
 
+    private static readonly System.Reflection.MethodInfo JumpToLocationGetter =
+        AccessTools.PropertyGetter(typeof(ChoiceLetter), "Option_JumpToLocation");
+
+    private static readonly System.Reflection.MethodInfo CloseGetter =
+        AccessTools.PropertyGetter(typeof(ChoiceLetter), "Option_Close");
+
     public static Pawn GetPawn(ChoiceLetter_BabyBirth letter)
     {
         return PawnField(letter);
     }
 
-    private static readonly AccessTools.FieldRef<DiaOption, string> DiaOptionText =
-        AccessTools.FieldRefAccess<DiaOption, string>("text");
-
-    public static void Postfix(ref IEnumerable<DiaOption> __result)
+    public static bool Prefix(ChoiceLetter_BabyBirth __instance, ref IEnumerable<DiaOption> __result)
     {
-        string nameBaby = "NameBaby".Translate().CapitalizeFirst();
-        __result = __result.Where(option => DiaOptionText(option) != nameBaby);
+        __result = new[]
+        {
+            (DiaOption)JumpToLocationGetter.Invoke(__instance, null),
+            (DiaOption)CloseGetter.Invoke(__instance, null)
+        };
+        return false;
     }
 }
 
