@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <ANB.SettingsCategory>Auto Name Babies</ANB.SettingsCategory>
+  <ANB.SurnameHeader>Last name</ANB.SurnameHeader>
+  <ANB.SurnameFather>Father</ANB.SurnameFather>
+  <ANB.SurnameFatherTip>Use the father's last name. Falls back to the mother, then the birth parent, if needed.</ANB.SurnameFatherTip>
+  <ANB.SurnameMother>Mother</ANB.SurnameMother>
+  <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the father, then the birth parent, if needed.</ANB.SurnameMotherTip>
+  <ANB.SurnameRandom>Random parent</ANB.SurnameRandom>
+  <ANB.SurnameRandomTip>Pick randomly among the parents' last names, matching vanilla.</ANB.SurnameRandomTip>
+  <ANB.LetterPartAutoNamed>The baby has been named {0}.</ANB.LetterPartAutoNamed>
+</LanguageData>
