@@ -72,6 +72,13 @@ public static class BabyNamer
 
     public static string? ChooseLastName(Pawn baby)
     {
+        // Birth already rolled a last name through PregnancyUtility.RandomLastName.
+        // Stochastic modes must keep it so the baby is not renamed a second time.
+        if (baby.Name is NameTriple current && !current.Last.NullOrEmpty() && IsStochasticSurnameMode())
+        {
+            return current.Last;
+        }
+
         return ChooseLastName(baby.GetMother(), baby.GetBirthParent(), baby.GetFather());
     }
 
@@ -81,28 +88,174 @@ public static class BabyNamer
         string? fatherLast = LastNameOf(father);
         string? birthLast = LastNameOf(birthingMother);
 
-        switch (AutoNameBabiesMod.Settings.surnameMode)
+        switch (AutoNameBabiesMod.Settings.EffectiveSurnameMode)
         {
             case SurnameMode.Father:
                 return FirstNonEmpty(fatherLast, motherLast, birthLast);
             case SurnameMode.Mother:
                 return FirstNonEmpty(motherLast, birthLast, fatherLast);
+            case SurnameMode.Ideology:
+                return ChooseLastNameFromMarriagePrecept(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
             default:
-                List<string> names = new List<string>();
-                AddUnique(names, motherLast);
-                AddUnique(names, fatherLast);
-                if (birthingMother != null && birthingMother != geneticMother && birthingMother != father)
-                {
-                    AddUnique(names, birthLast);
-                }
-
-                if (names.Count == 0)
-                {
-                    return null;
-                }
-
-                return names.RandomElement();
+                return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
         }
+    }
+
+    private static bool IsStochasticSurnameMode()
+    {
+        SurnameMode mode = AutoNameBabiesMod.Settings.EffectiveSurnameMode;
+        return mode == SurnameMode.Random || mode == SurnameMode.Ideology;
+    }
+
+    private static string? ChooseLastNameFromMarriagePrecept(
+        Pawn? geneticMother,
+        Pawn? birthingMother,
+        Pawn? father,
+        string? motherLast,
+        string? fatherLast,
+        string? birthLast)
+    {
+        Pawn? ideoPawn = ChooseIdeoPawn(geneticMother, birthingMother, father);
+        if (ideoPawn?.Ideo == null)
+        {
+            return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+        }
+
+        string? preceptDefName = GetMarriageNamePreceptDefName(ideoPawn.Ideo);
+        switch (preceptDefName)
+        {
+            case "MarriageName_AlwaysMans":
+                return LastNameForMarriageChange(MarriageNameChange.MansName, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+            case "MarriageName_AlwaysWomans":
+                return LastNameForMarriageChange(MarriageNameChange.WomansName, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+            case "MarriageName_KeepNames":
+                return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+            default:
+                MarriageNameChange change = SpouseRelationUtility.Roll_NameChangeOnMarriage(ideoPawn);
+                return LastNameForMarriageChange(change, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+        }
+    }
+
+    private static string? LastNameForMarriageChange(
+        MarriageNameChange change,
+        Pawn? geneticMother,
+        Pawn? birthingMother,
+        Pawn? father,
+        string? motherLast,
+        string? fatherLast,
+        string? birthLast)
+    {
+        Pawn? man;
+        Pawn? woman;
+        if (TryGetManAndWomanParents(geneticMother, birthingMother, father, out man, out woman))
+        {
+            switch (change)
+            {
+                case MarriageNameChange.MansName:
+                    return FirstNonEmpty(LastNameOf(man), LastNameOf(woman), birthLast);
+                case MarriageNameChange.WomansName:
+                    return FirstNonEmpty(LastNameOf(woman), LastNameOf(man), birthLast);
+                default:
+                    return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+            }
+        }
+
+        switch (change)
+        {
+            case MarriageNameChange.MansName:
+                return FirstNonEmpty(fatherLast, motherLast, birthLast);
+            case MarriageNameChange.WomansName:
+                return FirstNonEmpty(motherLast, birthLast, fatherLast);
+            default:
+                return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+        }
+    }
+
+    private static bool TryGetManAndWomanParents(Pawn? geneticMother, Pawn? birthingMother, Pawn? father, out Pawn? man, out Pawn? woman)
+    {
+        Pawn? first = geneticMother ?? birthingMother;
+        Pawn? second = father;
+        if (second == null || second == first)
+        {
+            second = birthingMother != first ? birthingMother : null;
+        }
+
+        if (first == null || second == null)
+        {
+            man = null;
+            woman = null;
+            return false;
+        }
+
+        SpouseRelationUtility.DetermineManAndWomanSpouses(first, second, out Pawn determinedMan, out Pawn determinedWoman);
+        man = determinedMan;
+        woman = determinedWoman;
+        return true;
+    }
+
+    private static Pawn? ChooseIdeoPawn(Pawn? geneticMother, Pawn? birthingMother, Pawn? father)
+    {
+        Pawn? first = geneticMother ?? birthingMother;
+        Pawn? second = father;
+        if (first?.Ideo != null && second?.Ideo != null && first.Ideo != second.Ideo)
+        {
+            return Rand.Value < 0.5f ? first : second;
+        }
+
+        if (first?.Ideo != null)
+        {
+            return first;
+        }
+
+        if (second?.Ideo != null)
+        {
+            return second;
+        }
+
+        if (birthingMother?.Ideo != null)
+        {
+            return birthingMother;
+        }
+
+        return first ?? second ?? birthingMother;
+    }
+
+    private static string? GetMarriageNamePreceptDefName(Ideo ideo)
+    {
+        List<Precept> precepts = ideo.PreceptsListForReading;
+        for (int i = 0; i < precepts.Count; i++)
+        {
+            if (precepts[i].def.issue?.defName == "MarriageName")
+            {
+                return precepts[i].def.defName;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? RandomParentLastName(
+        Pawn? geneticMother,
+        Pawn? birthingMother,
+        Pawn? father,
+        string? motherLast,
+        string? fatherLast,
+        string? birthLast)
+    {
+        List<string> names = new List<string>();
+        AddUnique(names, motherLast);
+        AddUnique(names, fatherLast);
+        if (birthingMother != null && birthingMother != geneticMother && birthingMother != father)
+        {
+            AddUnique(names, birthLast);
+        }
+
+        if (names.Count == 0)
+        {
+            return null;
+        }
+
+        return names.RandomElement();
     }
 
     private static string? LastNameOf(Pawn? pawn)

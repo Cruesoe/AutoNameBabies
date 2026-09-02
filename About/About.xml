@@ -9,9 +9,9 @@
   </supportedVersions>
   <description>Automatically names babies when they are born. The naming letter still announces the birth, but the name-the-baby dialog is skipped.
 
-First names come from the same generator as the vanilla randomize button. Last names can be the father's, the mother's, or a random parent surname (mod settings).
+First names come from the same generator as the vanilla randomize button. Last names can be the father's, the mother's, or a random parent surname (mod settings). If Ideology is installed, last names can follow the marriage names precept instead.
 
-Requires Biotech.</description>
+Requires Biotech. Ideology is optional.</description>
   <modDependencies>
     <li>
       <packageId>Ludeon.RimWorld.Biotech</packageId>
@@ -26,6 +26,7 @@ Requires Biotech.</description>
   </modDependencies>
   <loadAfter>
     <li>Ludeon.RimWorld.Biotech</li>
+    <li>Ludeon.RimWorld.Ideology</li>
     <li>brrainz.harmony</li>
   </loadAfter>
 </ModMetaData>

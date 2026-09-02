@@ -8,5 +8,7 @@
   <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the father, then the birth parent, if needed.</ANB.SurnameMotherTip>
   <ANB.SurnameRandom>Random parent</ANB.SurnameRandom>
   <ANB.SurnameRandomTip>Pick randomly among the parents' last names, matching vanilla.</ANB.SurnameRandomTip>
+  <ANB.SurnameIdeology>Ideology marriage names</ANB.SurnameIdeology>
+  <ANB.SurnameIdeologyTip>Use the parents' Ideology marriage name precept instead of a fixed last-name rule. Always or usually the man's name uses the father's surname; always or usually the woman's name uses the mother's. Keep names and random pick among the parents.</ANB.SurnameIdeologyTip>
   <ANB.LetterPartAutoNamed>The baby has been named {0}.</ANB.LetterPartAutoNamed>
 </LanguageData>

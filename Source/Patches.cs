@@ -10,7 +10,7 @@ public static class Patch_PregnancyUtility_RandomLastName
 {
     public static bool Prefix(Pawn geneticMother, Pawn birthingMother, Pawn father, ref string __result)
     {
-        if (AutoNameBabiesMod.Settings.surnameMode == SurnameMode.Random)
+        if (AutoNameBabiesMod.Settings.EffectiveSurnameMode == SurnameMode.Random)
         {
             return true;
         }

@@ -27,12 +27,26 @@ public enum SurnameMode
 {
     Father,
     Mother,
-    Random
+    Random,
+    Ideology
 }
 
 public class AutoNameBabiesSettings : ModSettings
 {
     public SurnameMode surnameMode = SurnameMode.Random;
+
+    public SurnameMode EffectiveSurnameMode
+    {
+        get
+        {
+            if (surnameMode == SurnameMode.Ideology && !ModsConfig.IdeologyActive)
+            {
+                return SurnameMode.Random;
+            }
+
+            return surnameMode;
+        }
+    }
 
     public void DoWindowContents(Rect inRect)
     {
@@ -41,19 +55,29 @@ public class AutoNameBabiesSettings : ModSettings
         list.Label("ANB.SurnameHeader".Translate());
         list.Gap(6f);
 
-        if (list.RadioButton("ANB.SurnameFather".Translate(), surnameMode == SurnameMode.Father, tooltip: "ANB.SurnameFatherTip".Translate()))
+        SurnameMode selected = EffectiveSurnameMode;
+
+        if (list.RadioButton("ANB.SurnameFather".Translate(), selected == SurnameMode.Father, tooltip: "ANB.SurnameFatherTip".Translate()))
         {
             surnameMode = SurnameMode.Father;
         }
 
-        if (list.RadioButton("ANB.SurnameMother".Translate(), surnameMode == SurnameMode.Mother, tooltip: "ANB.SurnameMotherTip".Translate()))
+        if (list.RadioButton("ANB.SurnameMother".Translate(), selected == SurnameMode.Mother, tooltip: "ANB.SurnameMotherTip".Translate()))
         {
             surnameMode = SurnameMode.Mother;
         }
 
-        if (list.RadioButton("ANB.SurnameRandom".Translate(), surnameMode == SurnameMode.Random, tooltip: "ANB.SurnameRandomTip".Translate()))
+        if (list.RadioButton("ANB.SurnameRandom".Translate(), selected == SurnameMode.Random, tooltip: "ANB.SurnameRandomTip".Translate()))
         {
             surnameMode = SurnameMode.Random;
+        }
+
+        if (ModsConfig.IdeologyActive)
+        {
+            if (list.RadioButton("ANB.SurnameIdeology".Translate(), surnameMode == SurnameMode.Ideology, tooltip: "ANB.SurnameIdeologyTip".Translate()))
+            {
+                surnameMode = SurnameMode.Ideology;
+            }
         }
 
         list.End();
