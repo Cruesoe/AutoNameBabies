@@ -10,28 +10,42 @@ public static class Patch_PregnancyUtility_RandomLastName
 {
     public static bool Prefix(Pawn geneticMother, Pawn birthingMother, Pawn father, ref string __result)
     {
-        if (AutoNameBabiesMod.Settings.EffectiveSurnameMode == SurnameMode.Random)
+        if (BabyNamer.EffectiveSurnameMode == SurnameMode.Random)
         {
             return true;
         }
 
-        string? lastName = BabyNamer.ChooseLastName(geneticMother, birthingMother, father);
-        if (lastName.NullOrEmpty())
+        try
         {
+            string? lastName = BabyNamer.ChooseLastName(geneticMother, birthingMother, father);
+            if (lastName.NullOrEmpty())
+            {
+                return true;
+            }
+
+            __result = lastName!;
+            return false;
+        }
+        catch (System.Exception exception)
+        {
+            // A naming preference must never interrupt birth or pawn generation.
+            // Let RimWorld choose the surname if another mod supplies unusual parents
+            // or a partially initialized ideology.
+            Log.ErrorOnce(
+                $"[Auto Name Babies] Could not choose a custom baby surname; using RimWorld's default surname instead.\n{exception}",
+                173846921);
             return true;
         }
-
-        __result = lastName!;
-        return false;
     }
 }
 
-[HarmonyPatch(typeof(PawnBioAndNameGenerator), nameof(PawnBioAndNameGenerator.GiveAppropriateBioAndNameTo))]
-public static class Patch_GiveAppropriateBioAndNameTo
+[HarmonyPatch(typeof(PregnancyUtility), nameof(PregnancyUtility.ApplyBirthOutcome))]
+public static class Patch_PregnancyUtility_ApplyBirthOutcome
 {
-    public static void Postfix(Pawn pawn)
+    public static void Postfix(Thing __result)
     {
-        if (pawn.Faction.IsPlayerSafe())
+        Pawn? pawn = __result as Pawn ?? (__result as Corpse)?.InnerPawn;
+        if (pawn?.Faction.IsPlayerSafe() == true)
         {
             BabyNamer.TryName(pawn);
         }
@@ -49,21 +63,39 @@ public static class Patch_ChoiceLetter_BabyBirth_Start
             return;
         }
 
-        if (pawn.Faction.IsPlayerSafe())
+        if (!pawn.Faction.IsPlayerSafe())
         {
-            BabyNamer.TryName(pawn);
+            return;
         }
 
-        UpdateLetterText(__instance, pawn);
+        Name previousName = pawn.Name;
+        if (!BabyNamer.IsTemporarilyNamed(pawn) || BabyNamer.TryName(pawn))
+        {
+            UpdateLetterText(__instance, pawn, previousName);
+        }
     }
 
-    private static void UpdateLetterText(ChoiceLetter_BabyBirth letter, Pawn pawn)
+    private static void UpdateLetterText(ChoiceLetter_BabyBirth letter, Pawn pawn, Name previousName)
     {
         string current = letter.Text.Resolve();
         string named = "ANB.LetterPartAutoNamed".Translate(pawn.Name.ToStringFull).Resolve();
-        string tempLive = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartLiveBirthNameDeadline".Translate(60000.ToStringTicksToPeriod())).Resolve();
-        string tempStill = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartStillbirthNameDeadline".Translate()).Resolve();
-        string adopt = "LetterPartNameBabyAdopt".Translate(pawn, 60000.ToStringTicksToPeriod()).Resolve();
+        Name currentName = pawn.Name;
+        string tempLive;
+        string tempStill;
+        string adopt;
+        try
+        {
+            // The letter was composed before Start named the pawn, so resolve the text
+            // against the former name in order to replace the exact original paragraph.
+            pawn.Name = previousName;
+            tempLive = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartLiveBirthNameDeadline".Translate(60000.ToStringTicksToPeriod())).Resolve();
+            tempStill = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartStillbirthNameDeadline".Translate()).Resolve();
+            adopt = "LetterPartNameBabyAdopt".Translate(pawn, 60000.ToStringTicksToPeriod()).Resolve();
+        }
+        finally
+        {
+            pawn.Name = currentName;
+        }
 
         string updated = current
             .Replace("\n\n" + tempLive, "\n\n" + named)
@@ -80,9 +112,13 @@ public static class Patch_ChoiceLetter_BabyBirth_Start
 [HarmonyPatch(typeof(ChoiceLetter_BabyBirth), nameof(ChoiceLetter_BabyBirth.ShouldAutomaticallyOpenLetter), MethodType.Getter)]
 public static class Patch_ChoiceLetter_BabyBirth_ShouldAutomaticallyOpenLetter
 {
-    public static void Postfix(ref bool __result)
+    public static void Postfix(ChoiceLetter_BabyBirth __instance, ref bool __result)
     {
-        __result = false;
+        Pawn? pawn = Patch_ChoiceLetter_BabyBirth_Choices.GetPawn(__instance);
+        if (pawn?.Faction.IsPlayerSafe() == true && !BabyNamer.IsTemporarilyNamed(pawn))
+        {
+            __result = false;
+        }
     }
 }
 
@@ -98,19 +134,62 @@ public static class Patch_ChoiceLetter_BabyBirth_Choices
     private static readonly System.Reflection.MethodInfo CloseGetter =
         AccessTools.PropertyGetter(typeof(ChoiceLetter), "Option_Close");
 
+    private static readonly AccessTools.FieldRef<DiaOption, string> OptionText =
+        AccessTools.FieldRefAccess<DiaOption, string>("text");
+
     public static Pawn GetPawn(ChoiceLetter_BabyBirth letter)
     {
         return PawnField(letter);
     }
 
-    public static bool Prefix(ChoiceLetter_BabyBirth __instance, ref IEnumerable<DiaOption> __result)
+    public static void Postfix(ChoiceLetter_BabyBirth __instance, ref IEnumerable<DiaOption> __result)
     {
-        __result = new[]
+        Pawn? pawn = GetPawn(__instance);
+        if (pawn?.Faction.IsPlayerSafe() == true && !BabyNamer.IsTemporarilyNamed(pawn))
         {
-            (DiaOption)JumpToLocationGetter.Invoke(__instance, null),
-            (DiaOption)CloseGetter.Invoke(__instance, null)
-        };
-        return false;
+            __result = ChoicesAfterAutomaticNaming(__instance, __result);
+        }
+    }
+
+    private static IEnumerable<DiaOption> ChoicesAfterAutomaticNaming(
+        ChoiceLetter_BabyBirth letter,
+        IEnumerable<DiaOption> original)
+    {
+        string nameBaby = "NameBaby".Translate().CapitalizeFirst();
+        string postpone = "PostponeLetter".Translate();
+        string jump = "JumpToLocation".Translate();
+        string close = "Close".Translate();
+        bool hasClose = false;
+
+        foreach (DiaOption option in original)
+        {
+            string text = OptionText(option);
+            if (text == nameBaby || text == postpone)
+            {
+                continue;
+            }
+
+            if (text == jump)
+            {
+                // Vanilla's active-letter jump option postpones the letter. Substitute
+                // the closing version now that there is no naming decision outstanding.
+                yield return (DiaOption)JumpToLocationGetter.Invoke(letter, null);
+                continue;
+            }
+
+            if (text == close)
+            {
+                hasClose = true;
+            }
+
+            // Preserve choices contributed by other mods.
+            yield return option;
+        }
+
+        if (!hasClose)
+        {
+            yield return (DiaOption)CloseGetter.Invoke(letter, null);
+        }
     }
 }
 

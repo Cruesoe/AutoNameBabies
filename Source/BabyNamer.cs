@@ -6,6 +6,9 @@ namespace AutoNameBabies;
 
 public static class BabyNamer
 {
+    public static SurnameMode EffectiveSurnameMode =>
+        AutoNameBabiesMod.Settings?.EffectiveSurnameMode ?? SurnameMode.Random;
+
     public static string TemporaryBabyFirstName => "Baby".Translate().CapitalizeFirst();
 
     public static bool IsTemporarilyNamed(Pawn pawn)
@@ -15,7 +18,7 @@ public static class BabyNamer
 
     public static bool TryName(Pawn pawn)
     {
-        if (pawn == null || !ModsConfig.BiotechActive || !pawn.RaceProps.Humanlike)
+        if (pawn == null || !ModsConfig.BiotechActive || !pawn.RaceProps.Humanlike || !pawn.DevelopmentalStage.Baby())
         {
             return false;
         }
@@ -30,28 +33,37 @@ public static class BabyNamer
             return false;
         }
 
-        string lastName = ChooseLastName(pawn) ?? current.Last;
-        Name generated = PawnBioAndNameGenerator.GeneratePawnName(
-            pawn,
-            NameStyle.Full,
-            lastName,
-            forceNoNick: false,
-            pawn.genes?.Xenotype);
+        try
+        {
+            string lastName = ChooseLastName(pawn) ?? current.Last;
+            Name generated = PawnBioAndNameGenerator.GeneratePawnName(
+                pawn,
+                NameStyle.Full,
+                lastName,
+                forceNoNick: false,
+                pawn.genes?.Xenotype);
 
-        if (generated is NameTriple generatedTriple)
-        {
-            pawn.Name = new NameTriple(generatedTriple.First, generatedTriple.NickSet ? generatedTriple.Nick : null, lastName);
+            if (generated is NameTriple generatedTriple)
+            {
+                pawn.Name = new NameTriple(generatedTriple.First, generatedTriple.NickSet ? generatedTriple.Nick : null, lastName);
+            }
+            else if (generated is NameSingle generatedSingle)
+            {
+                pawn.Name = new NameTriple(generatedSingle.Name, null, lastName);
+            }
+            else
+            {
+                Log.Warning($"[Auto Name Babies] The name generator returned no usable name for {pawn.ThingID}.");
+                return false;
+            }
+
+            return true;
         }
-        else if (generated is NameSingle generatedSingle)
+        catch (System.Exception exception)
         {
-            pawn.Name = new NameTriple(generatedSingle.Name, null, lastName);
-        }
-        else
-        {
+            Log.Error($"[Auto Name Babies] Could not name {pawn.ThingID}. The vanilla naming controls will remain available.\n{exception}");
             return false;
         }
-
-        return true;
     }
 
     public static void NameUnnamedPlayerBabies()
@@ -63,7 +75,7 @@ public static class BabyNamer
 
         foreach (Pawn pawn in PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
         {
-            if (pawn.Faction.IsPlayerSafe() && IsTemporarilyNamed(pawn))
+            if (pawn.Faction.IsPlayerSafe() && pawn.DevelopmentalStage.Baby() && IsTemporarilyNamed(pawn))
             {
                 TryName(pawn);
             }
@@ -88,7 +100,7 @@ public static class BabyNamer
         string? fatherLast = LastNameOf(father);
         string? birthLast = LastNameOf(birthingMother);
 
-        switch (AutoNameBabiesMod.Settings.EffectiveSurnameMode)
+        switch (EffectiveSurnameMode)
         {
             case SurnameMode.Father:
                 return FirstNonEmpty(fatherLast, motherLast, birthLast);
@@ -103,7 +115,7 @@ public static class BabyNamer
 
     private static bool IsStochasticSurnameMode()
     {
-        SurnameMode mode = AutoNameBabiesMod.Settings.EffectiveSurnameMode;
+        SurnameMode mode = EffectiveSurnameMode;
         return mode == SurnameMode.Random || mode == SurnameMode.Ideology;
     }
 
@@ -130,9 +142,16 @@ public static class BabyNamer
                 return LastNameForMarriageChange(MarriageNameChange.WomansName, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
             case "MarriageName_KeepNames":
                 return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
-            default:
+            case "MarriageName_UsuallyMans":
+            case "MarriageName_UsuallyWomans":
+            case "MarriageName_Random":
                 MarriageNameChange change = SpouseRelationUtility.Roll_NameChangeOnMarriage(ideoPawn);
                 return LastNameForMarriageChange(change, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
+            default:
+                // Some scenarios, including VFE Tribals' Wild Men start, deliberately
+                // use an incomplete ideology with no marriage-name precept. Do not run
+                // the ideology history-event evaluator against that temporary state.
+                return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
         }
     }
 
