@@ -22,3 +22,8 @@ Desktop.ini
 ## Retired shared ModKit artifacts
 Directory.Build.props
 Directory.Build.targets
+
+# Local build files and agent notes, kept on disk but never tracked
+*.slnx
+AGENTS.md
+CLAUDE.md
