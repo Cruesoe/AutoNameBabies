@@ -1,0 +1,12 @@
+[h1]Auto Name Babies[/h1]
+When a baby is born, RimWorld pops a letter and waits for you to name them. This mod names the baby immediately and removes that prompt because parents name a baby. not the player!
+
+The birth letter still appears so you know a child arrived. It no longer auto-opens a naming dialog, and it no longer offers [b]Name baby[/b] or [b]Postpone[/b]. You just get [b]Jump to location[/b] and [b]Close[/b].
+
+[h2]Names[/h2]
+[list]
+[*][b]First name[/b] uses the same generator as vanilla's randomize button (culture and xenotype).
+[*][b]Last name[/b] is chosen in mod settings: father's surname, mother's surname, or a random parent surname (vanilla-style).
+[/list]
+
+If you add the mod to an existing save, player babies still named "Baby" are named when you load.
