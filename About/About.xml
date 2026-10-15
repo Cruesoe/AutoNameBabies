@@ -6,6 +6,7 @@
   <modVersion IgnoreIfNoMatchingField="True">260913</modVersion>
   <supportedVersions>
     <li>1.6</li>
+    <li>1.7</li>
   </supportedVersions>
   <description>Automatically names babies when they are born. The naming letter still announces the birth, but the name-the-baby dialog is skipped.
 
