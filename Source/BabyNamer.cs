@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Verse;
 
@@ -73,7 +74,8 @@ public static class BabyNamer
             return;
         }
 
-        foreach (Pawn pawn in PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead)
+        // Iterate a copy: naming a pawn can refill the shared PawnsFinder list
+        foreach (Pawn pawn in PawnsFinder.AllMapsWorldAndTemporary_AliveOrDead.ToList())
         {
             if (pawn.Faction.IsPlayerSafe() && pawn.DevelopmentalStage.Baby() && IsTemporarilyNamed(pawn))
             {

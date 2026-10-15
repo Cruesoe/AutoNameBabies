@@ -1,12 +1,20 @@
-[h1]Auto Name Babies[/h1]
-When a baby is born, RimWorld pops a letter and waits for you to name them. This mod names the baby immediately and removes that prompt because parents name a baby. not the player!
+[b]Names your colony's babies the moment they are born, so you never have to answer the naming prompt.[/b]
 
-The birth letter still appears so you know a child arrived. It no longer auto-opens a naming dialog, and it no longer offers [b]Name baby[/b] or [b]Postpone[/b]. You just get [b]Jump to location[/b] and [b]Close[/b].
+Parents name a baby, not the player! The birth letter still arrives so you know a child was born, but it no longer opens a naming dialog.
 
-[h2]Names[/h2]
+[h2]Features[/h2]
 [list]
-[*][b]First name[/b] uses the same generator as vanilla's randomize button (culture and xenotype).
-[*][b]Last name[/b] is chosen in mod settings: father's surname, mother's surname, or a random parent surname (vanilla-style).
+[*]Each newborn gets a first name from the same generator as vanilla's randomize button, based on culture and xenotype.
+[*]The birth letter says what the baby was named and offers only [b]Jump to location[/b] and [b]Close[/b].
+[*]Babies still named "Baby" in an existing save are named when the save loads.
 [/list]
 
-If you add the mod to an existing save, player babies still named "Baby" are named when you load.
+[h2]Settings[/h2]
+[list]
+[*][b]Last name[/b]: the father's surname, the mother's surname, or a random parent's surname, as in vanilla. Random parent is the default.
+[*][b]Ideology marriage names[/b]: with Ideology, follow the parents' marriage name precept instead. Always or usually the man's name gives the father's surname, always or usually the woman's name gives the mother's, and keep names or random picks a parent at random.
+[/list]
+
+[h2]Compatibility[/h2]
+Requires Biotech. Ideology is optional. Works with incomplete ideologies, including the Vanilla Factions Expanded - Tribals Wild Men start.
+Safe to add to an existing save.
