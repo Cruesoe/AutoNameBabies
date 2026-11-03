@@ -90,18 +90,30 @@ public class AutoNameBabiesSettings : ModSettings
         Rect girls = new Rect(boys.xMax + 16f, area.y, columnWidth, area.height);
 
         Widgets.Label(new Rect(boys.x, boys.y, boys.width, labelHeight), "ANB.FirstNamesBoys".Translate());
-        boyNames = ScrollingTextArea(new Rect(boys.x, boys.y + labelHeight + 4f, boys.width, boys.height - labelHeight - 4f), boyNames, ref boyScroll);
+        boyNames = ScrollingTextArea(new Rect(boys.x, boys.y + labelHeight + 4f, boys.width, boys.height - labelHeight - 4f), boyNames, ref boyScroll, BoyNamesControl);
         Widgets.Label(new Rect(girls.x, girls.y, girls.width, labelHeight), "ANB.FirstNamesGirls".Translate());
-        girlNames = ScrollingTextArea(new Rect(girls.x, girls.y + labelHeight + 4f, girls.width, girls.height - labelHeight - 4f), girlNames, ref girlScroll);
+        girlNames = ScrollingTextArea(new Rect(girls.x, girls.y + labelHeight + 4f, girls.width, girls.height - labelHeight - 4f), girlNames, ref girlScroll, GirlNamesControl);
 
         list.End();
+
+        // Enter adds a line instead of closing the settings window while a name list has focus
+        string focused = GUI.GetNameOfFocusedControl();
+        Window? window = Find.WindowStack.currentlyDrawnWindow;
+        if (window != null)
+        {
+            window.closeOnAccept = focused != BoyNamesControl && focused != GirlNamesControl;
+        }
     }
 
-    private static string ScrollingTextArea(Rect outRect, string text, ref Vector2 scroll)
+    private const string BoyNamesControl = "ANB_BoyNames";
+    private const string GirlNamesControl = "ANB_GirlNames";
+
+    private static string ScrollingTextArea(Rect outRect, string text, ref Vector2 scroll, string controlName)
     {
         float innerWidth = outRect.width - 16f;
         Rect inner = new Rect(0f, 0f, innerWidth, Mathf.Max(outRect.height, Text.CalcHeight(text, innerWidth) + 24f));
         Widgets.BeginScrollView(outRect, ref scroll, inner);
+        GUI.SetNextControlName(controlName);
         string result = Widgets.TextArea(inner, text);
         Widgets.EndScrollView();
         return result;
