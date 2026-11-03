@@ -12,6 +12,7 @@ In RimWorld it's the parents who name a baby, not the player. The birth letter s
 [h2]Settings[/h2]
 [list]
 [*][b]Last name[/b]: the father's surname, the mother's surname, or a random parent's surname, as in vanilla. Random parent is the default.
+[*][b]First names[/b]: lists of boys' and girls' names, one per line. Each baby gets a random name from its list that no living colonist uses, and names are generated as usual when the list is empty or every name is taken.
 [*][b]Ideology marriage names[/b]: with Ideology, follow the parents' marriage name precept instead. Always or usually the man's name gives the father's surname, always or usually the woman's name gives the mother's, and keep names or random picks a parent at random.
 [/list]
 

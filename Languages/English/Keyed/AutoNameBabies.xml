@@ -11,5 +11,9 @@
   <ANB.SurnameIdeology>Ideology marriage names</ANB.SurnameIdeology>
   <ANB.SurnameIdeologyTip>Use the parents' Ideology marriage name precept instead of a fixed last-name rule. Always or usually the man's name uses the father's surname; always or usually the woman's name uses the mother's. Keep names and random pick among the parents.</ANB.SurnameIdeologyTip>
   <ANB.SurnameIdeologyRequiresTip>Requires the Ideology DLC.</ANB.SurnameIdeologyRequiresTip>
+  <ANB.FirstNamesHeader>First names</ANB.FirstNamesHeader>
+  <ANB.FirstNamesDesc>One name per line. Babies get a random name from their list that no living colonist uses. When a list is empty or every name is taken, names are generated as usual.</ANB.FirstNamesDesc>
+  <ANB.FirstNamesBoys>Boys</ANB.FirstNamesBoys>
+  <ANB.FirstNamesGirls>Girls</ANB.FirstNamesGirls>
   <ANB.LetterPartAutoNamed>The baby has been named {0}.</ANB.LetterPartAutoNamed>
 </LanguageData>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
@@ -6,6 +7,31 @@ namespace AutoNameBabies;
 public class AutoNameBabiesSettings : ModSettings
 {
     public SurnameMode surnameMode = SurnameMode.Random;
+    public string boyNames = "";
+    public string girlNames = "";
+
+    private Vector2 boyScroll;
+    private Vector2 girlScroll;
+
+    public static List<string> ParseNames(string? text)
+    {
+        List<string> names = new List<string>();
+        if (text.NullOrEmpty())
+        {
+            return names;
+        }
+
+        foreach (string line in text!.Split('\n'))
+        {
+            string name = line.Trim();
+            if (name.Length > 0 && !names.Contains(name))
+            {
+                names.Add(name);
+            }
+        }
+
+        return names;
+    }
 
     public SurnameMode EffectiveSurnameMode
     {
@@ -52,11 +78,39 @@ public class AutoNameBabiesSettings : ModSettings
             surnameMode = SurnameMode.Ideology;
         }
 
+        list.GapLine(18f);
+        list.Label("ANB.FirstNamesHeader".Translate());
+        list.Label("ANB.FirstNamesDesc".Translate());
+        list.Gap(6f);
+
+        float labelHeight = Text.LineHeight;
+        Rect area = list.GetRect(Mathf.Max(160f, inRect.height - list.CurHeight - 12f));
+        float columnWidth = (area.width - 16f) / 2f;
+        Rect boys = new Rect(area.x, area.y, columnWidth, area.height);
+        Rect girls = new Rect(boys.xMax + 16f, area.y, columnWidth, area.height);
+
+        Widgets.Label(new Rect(boys.x, boys.y, boys.width, labelHeight), "ANB.FirstNamesBoys".Translate());
+        boyNames = ScrollingTextArea(new Rect(boys.x, boys.y + labelHeight + 4f, boys.width, boys.height - labelHeight - 4f), boyNames, ref boyScroll);
+        Widgets.Label(new Rect(girls.x, girls.y, girls.width, labelHeight), "ANB.FirstNamesGirls".Translate());
+        girlNames = ScrollingTextArea(new Rect(girls.x, girls.y + labelHeight + 4f, girls.width, girls.height - labelHeight - 4f), girlNames, ref girlScroll);
+
         list.End();
+    }
+
+    private static string ScrollingTextArea(Rect outRect, string text, ref Vector2 scroll)
+    {
+        float innerWidth = outRect.width - 16f;
+        Rect inner = new Rect(0f, 0f, innerWidth, Mathf.Max(outRect.height, Text.CalcHeight(text, innerWidth) + 24f));
+        Widgets.BeginScrollView(outRect, ref scroll, inner);
+        string result = Widgets.TextArea(inner, text);
+        Widgets.EndScrollView();
+        return result;
     }
 
     public override void ExposeData()
     {
         Scribe_Values.Look(ref surnameMode, "surnameMode", SurnameMode.Random);
+        Scribe_Values.Look(ref boyNames, "boyNames", "");
+        Scribe_Values.Look(ref girlNames, "girlNames", "");
     }
 }

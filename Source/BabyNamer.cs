@@ -46,6 +46,13 @@ public static class BabyNamer
         try
         {
             string lastName = ChooseLastName(pawn) ?? current.Last;
+            string? listedFirstName = ChooseListedFirstName(pawn);
+            if (listedFirstName != null)
+            {
+                pawn.Name = new NameTriple(listedFirstName, null, lastName);
+                return true;
+            }
+
             Name generated = PawnBioAndNameGenerator.GeneratePawnName(
                 pawn,
                 NameStyle.Full,
@@ -74,6 +81,41 @@ public static class BabyNamer
             Log.Error($"[Auto Name Babies] Could not name {pawn.ThingID}. The vanilla naming controls will remain available.\n{exception}");
             return false;
         }
+    }
+
+    // A random name from the player's list for the baby's gender that no living colony pawn uses, or null
+    private static string? ChooseListedFirstName(Pawn baby)
+    {
+        AutoNameBabiesSettings? settings = AutoNameBabiesMod.Settings;
+        if (settings == null)
+        {
+            return null;
+        }
+
+        List<string> candidates = baby.gender switch
+        {
+            Gender.Male => AutoNameBabiesSettings.ParseNames(settings.boyNames),
+            Gender.Female => AutoNameBabiesSettings.ParseNames(settings.girlNames),
+            _ => AutoNameBabiesSettings.ParseNames(settings.boyNames).Concat(AutoNameBabiesSettings.ParseNames(settings.girlNames)).ToList()
+        };
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        HashSet<string> used = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        foreach (Pawn pawn in PawnsFinder.AllMapsWorldAndTemporary_Alive.Where(p => p != baby && p.Faction.IsPlayerSafe()).ToList())
+        {
+            if (pawn.Name is NameTriple triple)
+            {
+                used.Add(triple.First);
+                used.Add(triple.Nick);
+            }
+        }
+
+        List<string> available = candidates.Where(name => !used.Contains(name)).ToList();
+        return available.Count > 0 ? available.RandomElement() : null;
     }
 
     public static void NameUnnamedPlayerBabies()
