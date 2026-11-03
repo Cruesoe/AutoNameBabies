@@ -1,6 +1,6 @@
 [b]Names your colony's babies the moment they are born, so you never have to answer the naming prompt.[/b]
 
-Parents name a baby, not the player! The birth letter still arrives so you know a child was born, but it no longer opens a naming dialog.
+In RimWorld it's the parents who name a baby, not the player. The birth letter still arrives so you know a child was born, but it no longer opens a naming dialog.
 
 [h2]Features[/h2]
 [list]

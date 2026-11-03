@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -7,6 +8,14 @@ namespace AutoNameBabies;
 
 public static class BabyNamer
 {
+    private static readonly AccessTools.FieldRef<ChoiceLetter_BabyBirth, Pawn> LetterPawn =
+        AccessTools.FieldRefAccess<ChoiceLetter_BabyBirth, Pawn>("pawn");
+
+    public static Pawn? GetLetterPawn(ChoiceLetter_BabyBirth letter)
+    {
+        return LetterPawn(letter);
+    }
+
     public static SurnameMode EffectiveSurnameMode =>
         AutoNameBabiesMod.Settings?.EffectiveSurnameMode ?? SurnameMode.Random;
 
@@ -86,8 +95,7 @@ public static class BabyNamer
 
     public static string? ChooseLastName(Pawn baby)
     {
-        // Birth already rolled a last name through PregnancyUtility.RandomLastName.
-        // Stochastic modes must keep it so the baby is not renamed a second time.
+        // Random and Ideology modes keep the last name already rolled at birth by PregnancyUtility.RandomLastName
         if (baby.Name is NameTriple current && !current.Last.NullOrEmpty() && IsStochasticSurnameMode())
         {
             return current.Last;
@@ -150,9 +158,7 @@ public static class BabyNamer
                 MarriageNameChange change = SpouseRelationUtility.Roll_NameChangeOnMarriage(ideoPawn);
                 return LastNameForMarriageChange(change, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
             default:
-                // Some scenarios, including VFE Tribals' Wild Men start, deliberately
-                // use an incomplete ideology with no marriage-name precept. Do not run
-                // the ideology history-event evaluator against that temporary state.
+                // No marriage-name precept (incomplete ideologies, e.g. the VFE Tribals Wild Men start): random parent
                 return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
         }
     }

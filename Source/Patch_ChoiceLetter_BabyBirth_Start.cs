@@ -9,7 +9,7 @@ public static class Patch_ChoiceLetter_BabyBirth_Start
 {
     public static void Postfix(ChoiceLetter_BabyBirth __instance)
     {
-        Pawn? pawn = Patch_ChoiceLetter_BabyBirth_Choices.GetPawn(__instance);
+        Pawn? pawn = BabyNamer.GetLetterPawn(__instance);
         if (pawn == null)
         {
             return;
@@ -37,8 +37,7 @@ public static class Patch_ChoiceLetter_BabyBirth_Start
         string adopt;
         try
         {
-            // The letter was composed before Start named the pawn, so resolve the text
-            // against the former name in order to replace the exact original paragraph.
+            // Resolves vanilla's naming paragraphs against the temporary name so they match the letter text
             pawn.Name = previousName;
             tempLive = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartLiveBirthNameDeadline".Translate(60000.ToStringTicksToPeriod())).Resolve();
             tempStill = ("LetterPartTempBabyName".Translate(pawn) + " " + "LetterPartStillbirthNameDeadline".Translate()).Resolve();

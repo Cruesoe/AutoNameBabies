@@ -5,7 +5,7 @@
   <ANB.SurnameFather>Father</ANB.SurnameFather>
   <ANB.SurnameFatherTip>Use the father's last name. Falls back to the mother, then the birth parent, if needed.</ANB.SurnameFatherTip>
   <ANB.SurnameMother>Mother</ANB.SurnameMother>
-  <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the father, then the birth parent, if needed.</ANB.SurnameMotherTip>
+  <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the birth parent, then the father, if needed.</ANB.SurnameMotherTip>
   <ANB.SurnameRandom>Random parent</ANB.SurnameRandom>
   <ANB.SurnameRandomTip>Pick randomly among the parents' last names, matching vanilla.</ANB.SurnameRandomTip>
   <ANB.SurnameIdeology>Ideology marriage names</ANB.SurnameIdeology>
