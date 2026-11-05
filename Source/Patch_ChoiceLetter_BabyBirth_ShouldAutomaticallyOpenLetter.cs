@@ -9,7 +9,7 @@ public static class Patch_ChoiceLetter_BabyBirth_ShouldAutomaticallyOpenLetter
 {
     public static void Postfix(ChoiceLetter_BabyBirth __instance, ref bool __result)
     {
-        Pawn? pawn = Patch_ChoiceLetter_BabyBirth_Choices.GetPawn(__instance);
+        Pawn? pawn = BabyNamer.GetLetterPawn(__instance);
         if (pawn?.Faction.IsPlayerSafe() == true && !BabyNamer.IsTemporarilyNamed(pawn))
         {
             __result = false;

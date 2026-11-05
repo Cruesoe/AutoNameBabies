@@ -5,11 +5,15 @@
   <ANB.SurnameFather>Father</ANB.SurnameFather>
   <ANB.SurnameFatherTip>Use the father's last name. Falls back to the mother, then the birth parent, if needed.</ANB.SurnameFatherTip>
   <ANB.SurnameMother>Mother</ANB.SurnameMother>
-  <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the father, then the birth parent, if needed.</ANB.SurnameMotherTip>
+  <ANB.SurnameMotherTip>Use the mother's last name. Falls back to the birth parent, then the father, if needed.</ANB.SurnameMotherTip>
   <ANB.SurnameRandom>Random parent</ANB.SurnameRandom>
   <ANB.SurnameRandomTip>Pick randomly among the parents' last names, matching vanilla.</ANB.SurnameRandomTip>
   <ANB.SurnameIdeology>Ideology marriage names</ANB.SurnameIdeology>
   <ANB.SurnameIdeologyTip>Use the parents' Ideology marriage name precept instead of a fixed last-name rule. Always or usually the man's name uses the father's surname; always or usually the woman's name uses the mother's. Keep names and random pick among the parents.</ANB.SurnameIdeologyTip>
   <ANB.SurnameIdeologyRequiresTip>Requires the Ideology DLC.</ANB.SurnameIdeologyRequiresTip>
+  <ANB.FirstNamesHeader>First names</ANB.FirstNamesHeader>
+  <ANB.FirstNamesDesc>One name per line. Babies get a random name from their list that no living colonist uses. When a list is empty or every name is taken, names are generated as usual.</ANB.FirstNamesDesc>
+  <ANB.FirstNamesBoys>Boys</ANB.FirstNamesBoys>
+  <ANB.FirstNamesGirls>Girls</ANB.FirstNamesGirls>
   <ANB.LetterPartAutoNamed>The baby has been named {0}.</ANB.LetterPartAutoNamed>
 </LanguageData>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -7,6 +8,14 @@ namespace AutoNameBabies;
 
 public static class BabyNamer
 {
+    private static readonly AccessTools.FieldRef<ChoiceLetter_BabyBirth, Pawn> LetterPawn =
+        AccessTools.FieldRefAccess<ChoiceLetter_BabyBirth, Pawn>("pawn");
+
+    public static Pawn? GetLetterPawn(ChoiceLetter_BabyBirth letter)
+    {
+        return LetterPawn(letter);
+    }
+
     public static SurnameMode EffectiveSurnameMode =>
         AutoNameBabiesMod.Settings?.EffectiveSurnameMode ?? SurnameMode.Random;
 
@@ -37,6 +46,13 @@ public static class BabyNamer
         try
         {
             string lastName = ChooseLastName(pawn) ?? current.Last;
+            string? listedFirstName = ChooseListedFirstName(pawn);
+            if (listedFirstName != null)
+            {
+                pawn.Name = new NameTriple(listedFirstName, null, lastName);
+                return true;
+            }
+
             Name generated = PawnBioAndNameGenerator.GeneratePawnName(
                 pawn,
                 NameStyle.Full,
@@ -67,6 +83,41 @@ public static class BabyNamer
         }
     }
 
+    // A random name from the player's list for the baby's gender that no living colony pawn uses, or null
+    private static string? ChooseListedFirstName(Pawn baby)
+    {
+        AutoNameBabiesSettings? settings = AutoNameBabiesMod.Settings;
+        if (settings == null)
+        {
+            return null;
+        }
+
+        List<string> candidates = baby.gender switch
+        {
+            Gender.Male => AutoNameBabiesSettings.ParseNames(settings.boyNames),
+            Gender.Female => AutoNameBabiesSettings.ParseNames(settings.girlNames),
+            _ => AutoNameBabiesSettings.ParseNames(settings.boyNames).Concat(AutoNameBabiesSettings.ParseNames(settings.girlNames)).ToList()
+        };
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        HashSet<string> used = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+        foreach (Pawn pawn in PawnsFinder.AllMapsWorldAndTemporary_Alive.Where(p => p != baby && p.Faction.IsPlayerSafe()).ToList())
+        {
+            if (pawn.Name is NameTriple triple)
+            {
+                used.Add(triple.First);
+                used.Add(triple.Nick);
+            }
+        }
+
+        List<string> available = candidates.Where(name => !used.Contains(name)).ToList();
+        return available.Count > 0 ? available.RandomElement() : null;
+    }
+
     public static void NameUnnamedPlayerBabies()
     {
         if (!ModsConfig.BiotechActive || Find.World == null)
@@ -86,8 +137,7 @@ public static class BabyNamer
 
     public static string? ChooseLastName(Pawn baby)
     {
-        // Birth already rolled a last name through PregnancyUtility.RandomLastName.
-        // Stochastic modes must keep it so the baby is not renamed a second time.
+        // Random and Ideology modes keep the last name already rolled at birth by PregnancyUtility.RandomLastName
         if (baby.Name is NameTriple current && !current.Last.NullOrEmpty() && IsStochasticSurnameMode())
         {
             return current.Last;
@@ -150,9 +200,7 @@ public static class BabyNamer
                 MarriageNameChange change = SpouseRelationUtility.Roll_NameChangeOnMarriage(ideoPawn);
                 return LastNameForMarriageChange(change, geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
             default:
-                // Some scenarios, including VFE Tribals' Wild Men start, deliberately
-                // use an incomplete ideology with no marriage-name precept. Do not run
-                // the ideology history-event evaluator against that temporary state.
+                // No marriage-name precept (incomplete ideologies, e.g. the VFE Tribals Wild Men start): random parent
                 return RandomParentLastName(geneticMother, birthingMother, father, motherLast, fatherLast, birthLast);
         }
     }

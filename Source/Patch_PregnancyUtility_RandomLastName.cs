@@ -27,9 +27,7 @@ public static class Patch_PregnancyUtility_RandomLastName
         }
         catch (System.Exception exception)
         {
-            // A naming preference must never interrupt birth or pawn generation.
-            // Let RimWorld choose the surname if another mod supplies unusual parents
-            // or a partially initialized ideology.
+            // Falls back to RimWorld's surname roll on any error
             Log.ErrorOnce(
                 $"[Auto Name Babies] Could not choose a custom baby surname; using RimWorld's default surname instead.\n{exception}",
                 173846921);
