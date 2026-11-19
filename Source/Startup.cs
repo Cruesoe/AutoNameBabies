@@ -8,6 +8,6 @@ public static class Startup
 {
     static Startup()
     {
-        new Harmony("cruesoe.autonamebabies").PatchAll();
+        new Harmony("cruesoe.autonamebabies").PatchAll(typeof(Startup).Assembly);
     }
 }
