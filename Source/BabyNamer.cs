@@ -137,13 +137,18 @@ public static class BabyNamer
 
     public static string? ChooseLastName(Pawn baby)
     {
-        // Random and Ideology modes keep the last name already rolled at birth by PregnancyUtility.RandomLastName
-        if (baby.Name is NameTriple current && !current.Last.NullOrEmpty() && IsStochasticSurnameMode())
+        Pawn? geneticMother = baby.GetMother();
+        Pawn? birthingMother = baby.GetBirthParent();
+        Pawn? father = baby.GetFather();
+
+        // Random and Ideology modes keep the surname rolled at birth, unless a culture, xenotype or kind name maker replaced it
+        if (baby.Name is NameTriple current && !current.Last.NullOrEmpty() && IsStochasticSurnameMode()
+            && (current.Last == LastNameOf(geneticMother) || current.Last == LastNameOf(birthingMother) || current.Last == LastNameOf(father)))
         {
             return current.Last;
         }
 
-        return ChooseLastName(baby.GetMother(), baby.GetBirthParent(), baby.GetFather());
+        return ChooseLastName(geneticMother, birthingMother, father);
     }
 
     public static string? ChooseLastName(Pawn? geneticMother, Pawn? birthingMother, Pawn? father)
